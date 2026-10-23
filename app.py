@@ -65,13 +65,13 @@ col_m1, col_m2 = st.columns(2)
 with col_m1:
     midterm_status = st.selectbox("Midterm Status", ["Good", "Average", "Needs Improvement", "Excellent"])
 with col_m2:
-    midterm_comment = st.text_input("Midterm Comments")
+    midterm_comment = st.text_area("Midterm Comments", height=100)
 
 col_f1, col_f2 = st.columns(2)
 with col_f1:
     final_status = st.selectbox("Final Status", ["Good", "Average", "Needs Improvement", "Excellent"])
 with col_f2:
-    final_comment = st.text_input("Final Comments")
+    final_comment = st.text_area("Final Comments", height=100)
 
 result = st.selectbox("Result", ["Passed", "Failed", "Pending"])
 
@@ -133,15 +133,26 @@ def generate_pdf():
     story.append(Paragraph("<b>II. INSTRUCTOR'S REMARKS:</b>", styles['Heading2']))
     story.append(Spacer(1, 5))
     
+    # Cấu hình text tự xuống dòng cho comment
+    comment_style = ParagraphStyle(
+        'CommentStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9,
+        alignment=4, # Justify (Căn đều hai bên)
+        leading=12 
+    )
+    
     remarks_data = [
         ["No.", "Evaluation Content", "Status", "Comments"],
         ["I", "Attendance", "", ""],
         ["1", "Number of Absences", f"({absences}/{total_sessions})", ""],
         ["2", "Number of Incomplete Homeworks", f"({incomplete_hw}/{total_sessions})", ""],
         ["II", "Performance and Attitude Evaluation", "", ""],
-        ["1", "Midterm", midterm_status, midterm_comment],
-        ["2", "Final", final_status, final_comment],
+        ["1", "Midterm", midterm_status, Paragraph(midterm_comment, comment_style)],
+        ["2", "Final", final_status, Paragraph(final_comment, comment_style)],
     ]
+    
     t_remarks = Table(remarks_data, colWidths=[30, 180, 100, 190])
     t_remarks.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
@@ -149,7 +160,9 @@ def generate_pdf():
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('FONTSIZE', (0,0), (-1,-1), 9),
         ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'), # Căn lề trên để khung chữ đẹp khi dài ra
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
     ]))
     story.append(t_remarks)
     story.append(Spacer(1, 10))
